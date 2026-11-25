@@ -4,44 +4,44 @@
  * Replace base URL with your backend API (Neon PostgreSQL via serverless functions).
  */
 
-import { PRODUCTS } from '../constants/products';
+import axios from 'axios';
 import { CATEGORIES } from '../constants/categories';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const API_BASE_URL = 'http://localhost:8000/api/products/';
 
 /**
  * Products service
  */
 export const productService = {
+
+  // Fetch all products
   async getAll() {
-    if (!API_BASE_URL) return PRODUCTS;
-    const res = await fetch(`${API_BASE_URL}/api/products`);
-    return res.json();
+    const res = await axios.get(API_BASE_URL);
+    return res.data;
   },
 
+  // Fetch product by slug
   async getBySlug(slug) {
-    if (!API_BASE_URL) return PRODUCTS.find((p) => p.slug === slug) || null;
-    const res = await fetch(`${API_BASE_URL}/api/products/${slug}`);
-    return res.json();
+    const res = await axios.get(`${API_BASE_URL}${slug}/`);
+    return res.data;
   },
 
-  async getByCategory(categorySlug) {
-    if (!API_BASE_URL) {
-      return PRODUCTS.filter((p) =>
-        p.shapes.some((s) => s.toLowerCase().includes(categorySlug.toLowerCase()))
-      );
-    }
-    const res = await fetch(`${API_BASE_URL}/api/products?category=${categorySlug}`);
-    return res.json();
+  // Fetch products by category
+  async getByCategory(category) {
+    const res = await axios.get(
+      `${API_BASE_URL}?category=${category}`
+    );
+    return res.data;
   },
 
+  // Fetch best sellers
   async getBestSellers() {
-    if (!API_BASE_URL) return PRODUCTS.filter((p) => p.bestSeller);
-    const res = await fetch(`${API_BASE_URL}/api/products?bestSeller=true`);
-    return res.json();
+    const res = await axios.get(
+      `${API_BASE_URL}?best_seller=true`
+    );
+    return res.data;
   },
 };
-
 /**
  * Categories service
  */

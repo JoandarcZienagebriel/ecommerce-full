@@ -2,27 +2,44 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CATEGORIES } from '../../constants/categories';
 import AnimatedSection from '../../components/animations/AnimatedSection';
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+import { useEffect, useRef } from 'react';
 
+gsap.registerPlugin(ScrollTrigger)
 export default function BrowseByCategory() {
+
+  useEffect(()=>{
+    const ctx= gsap.context(()=>{
+      const item = gsap.utils.toArray('.category');
+      gsap.to(item, {
+        xPercent:-50,
+        repeat:-1,
+        ease:'none',
+        duration:15,
+      })
+    });
+    return()=>ctx.revert();
+    
+  }, [])
+ 
+
   return (
-    <AnimatedSection className="py-16 border-t-4 bg-obsidian text-alabaster md:py-18">
+    <div className="py-16 border-t-4 bg-obsidian text-alabaster md:py-18">
       <div className="px-4 md:px-8 lg:px-12 pt-8 mb-12">
         <h2 className="font-heading text-3xl text-center md:text-4xl font-medium">Browse by Category</h2>
         <p className="text-sm text-center font-bold text-muted-foreground mt-2">Find your favorite pasta shape</p>
       </div>
-      <div className="grid grid-flow-col auto-cols-[20rem] md:hide-scrollbar gap-12 ml-4 overflow-x-auto px-4 md:px-8 lg:px-12 pb-4 snap-x">
+      <div className="category grid grid-flow-col hide-scrollbar gap-12 ml-4 px-4 md:px-8 lg:px-12 pb-4">
         {CATEGORIES.map((cat, index) => (
-           <motion.div
+           <div
             key={cat.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
+          
           >
           <Link
             key={cat.id}
             to={`/shop?category=${cat.slug}`}
-            className="flex flex-col items-center min-w-[120px] md:min-w-[160px] snap-start group"
+            className="flex flex-col items-center min-w-[120px] md:min-w-[160px] group"
           >
             <div className="aspect-square h-[20rem] w-full bg-platinum mb-3">
               <img
@@ -36,9 +53,9 @@ export default function BrowseByCategory() {
               {cat.name}
             </span>
           </Link>
-          </motion.div>
+          </div>
         ))}
       </div>
-    </AnimatedSection>
+    </div>
   );
 }

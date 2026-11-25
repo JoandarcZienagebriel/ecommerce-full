@@ -1,6 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useCartStore } from '../../store/useCartStore';
 import { SITE_CONFIG } from '../../constants/site';
 import { formatPrice } from '../../utils/format';
@@ -74,7 +73,7 @@ export default function CartDrawer() {
                           <p className="text-xs text-muted-foreground">{item.selectedShape}</p>
                         )}
                         <p className="text-xs text-muted-foreground">{item.packSize}</p>
-                        <p className="text-sm font-medium mt-1">{formatPrice(item.price)}</p>
+                        <p className="text-sm font-medium mt-1">{item.price}</p>
 
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center border border-obsidian">
@@ -127,16 +126,7 @@ export default function CartDrawer() {
                     <span className="text-muted-foreground">Tax ({SITE_CONFIG.taxRate * 100}%)</span>
                     <span>{formatPrice(tax)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
-                  </div>
-                  <div className="flex justify-between text-base font-medium pt-2 border-t border-platinum">
-                    <span>Total</span>
-                    <motion.span key={total} initial={{ scale: 1.1 }} animate={{ scale: 1 }}>
-                      {formatPrice(total)}
-                    </motion.span>
-                  </div>
+                  
                   <Button to="/checkout" onClick={closeCart} className="w-full mt-3">
                     Checkout
                   </Button>

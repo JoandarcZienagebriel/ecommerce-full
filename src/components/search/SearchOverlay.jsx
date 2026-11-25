@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
 import Fuse from 'fuse.js';
 import { useSearchStore } from '../../store/useSearchStore';
-import { PRODUCTS } from '../../constants/products';
 import { CATEGORIES } from '../../constants/categories';
 import { RECIPES } from '../../constants/recipes';
+import axios from 'axios';
 const STATIC_PAGES = [
   { title: 'Home', path: '/', type: 'Page' },
   { title: 'Shop', path: '/shop', type: 'Page' },
@@ -19,10 +19,20 @@ export default function SearchOverlay() {
   const { isOpen, query, closeSearch, setQuery } = useSearchStore();
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [product, setProduct]= useState([]);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    
+  axios.get('http://localhost:8000/api/products/')
+  .then((response)=>{
+    setProduct(response.data)
+  })
+  .catch((error)=>{
+    console.error(error);
+  })
+
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setTimeout(() => inputRef.current?.focus(), 100);
@@ -40,7 +50,7 @@ export default function SearchOverlay() {
   }, [query]);
 
   const searchData = useMemo(() => {
-    const products = PRODUCTS.map((p) => ({ title: p.name, path: `/product/${p.slug}`, type: 'Product', image: p.image }));
+    const products = product.map((p) => ({ title: p.name, path: `/product/${p.slug}`, type: 'Product', image: p.image }));
     const categories = CATEGORIES.map((c) => ({ title: c.name, path: `/shop?category=${c.slug}`, type: 'Category', image: c.image }));
     const recipes = RECIPES.map((r) => ({ title: r.name, path: r.redirectTo, type: 'Recipe', image: r.image }));
     return [...products, ...categories, ...recipes, ...STATIC_PAGES];

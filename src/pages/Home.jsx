@@ -14,8 +14,6 @@ export default function Home() {
       <HeroSlider />
         <BestSellers />
       <BrowseByCategory />
-    
-      
       <MethodPreview />
       <FrescoBelloSection />
        <TrustedByBusinesses />

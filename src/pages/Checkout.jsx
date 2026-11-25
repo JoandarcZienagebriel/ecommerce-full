@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
@@ -9,78 +9,117 @@ import { orderService } from '../services';
 import Breadcrumb from '../components/common/Breadcrumb';
 import Input from '../components/common/Input';
 import Button from '../components/common/Button';
-
+import { UserContext } from '../components/UserContext';
+import axios from 'axios';
+import toast, {Toaster} from 'react-hot-toast';
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, removeItem, incrementQuantity, decrementQuantity, clearCart } = useCartStore();
   const subtotal = useCartStore((s) => s.getSubtotal());
   const tax = useCartStore((s) => s.getTax());
   const shipping = useCartStore((s) => s.getShipping());
-  const total = useCartStore((s) => s.getTotal());
+
 
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' });
   const [submitting, setSubmitting] = useState(false);
+  const address=['mexico', 'bole', 'lideta']
+  
+useEffect(()=>{
+  
+   axios.get("http://localhost:8000/api/csrf/", {
+  withCredentials: true
+})
+.catch((error)=>{
+    console.error(error);
+  })
 
-  const handleSubmit = async (e) => {
+}, [])
+
+const getCookie = (name) => {
+  const cookies = document.cookie.split(";");
+
+  for (let cookie of cookies) {
+    const [key, value] = cookie.trim().split("=");
+
+    if (key === name) {
+      return decodeURIComponent(value);
+    }
+  }
+
+  return null;
+};
+const csrfToken = getCookie("csrftoken");
+const {token}= useContext(UserContext);
+
+const handleSubmit = async (e) => {
   e.preventDefault();
 
-  setSubmitting(true);
-
   try {
+    const infoResponse = await fetch(
+  "http://localhost:8000/api/info/",
+  {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": csrfToken,
+    },
+    body: JSON.stringify(form),
+  }
+);
+const customer = await infoResponse.json();
+console.log('guest_id:',customer);
+if (!infoResponse.ok){
+  toast.error('failed to send data');
+  return;
+}
 
-    const order = await orderService.create({
-
-      customer: form,
-
-      items,
-
-      totals: {
-        subtotal,
-        tax,
-        shipping,
-        total
-      }
-
+    const response = await
+fetch("http://localhost:8000/api/data/", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Token ${token}`,
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({
+        guest:customer.id,
+        products: items.map((item) => ({
+          product: item.productId,
+          price: item.price,
+          quantity: item.quantity,
+      
+        })),
+      
+      }),
     });
 
+    if (!response.ok) {
+      throw new Error("Failed to submit data");
 
+    }
+
+    const data = await response.json();
+console.log('response:', response)
+
+    console.log("First response:", data);
     clearCart();
-
-
-    navigate("/ordersuccess", {
+    navigate("/ordersuccess",{
       state:{
-        orderNumber: order.order_number
+        guest_id:customer.id
       }
     });
 
-
-  } catch(error){
-
-    console.error(error);
-
-    alert(
-      "There was a problem placing your order. Please try again."
-    );
-
-  } finally {
-
-    setSubmitting(false);
-
+  } catch (error) {
+    console.error("Submission failed:", error);
   }
 };
 
-  if (items.length === 0) {
-    return (
-      <div className="pt-20 min-h-screen flex flex-col items-center justify-center px-4">
-        <ShoppingBag size={48} className="text-platinum mb-4" />
-        <h1 className="font-heading text-2xl mb-4">Your Cart is Empty</h1>
-        <Button to="/shop" variant="outline">Browse Products</Button>
-      </div>
-    );
-  }
 
   return (
     <div className="pt-16 md:pt-20 min-h-screen">
+      <Toaster position='top-right'/>
       <div className="px-4 md:px-8 lg:px-12 py-8">
         <Breadcrumb
           items={[
@@ -89,6 +128,7 @@ export default function Checkout() {
           ]}
         />
 
+       
         <h1 className="font-heading text-3xl md:text-4xl font-medium mb-8">Checkout</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
@@ -120,30 +160,44 @@ export default function Checkout() {
               required
             />
             <div>
-              <label htmlFor="address" className="block text-xs uppercase tracking-wider text-obsidian mb-2 font-medium">
-                Delivery Address
-              </label>
-              <textarea
-                id="address"
-                name="address"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                rows={4}
-                className="w-full border border-obsidian bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors"
-                required
-              />
-            </div>
-            <Button type="submit" size="lg" disabled={submitting} className="w-full">
-              {submitting ? 'Placing Order...' : `Place Order - ${formatPrice(total)}`}
-            </Button>
-          </form>
+            
+              {address.map((choice)=>(
 
-          {/* Order Summary */}
+            
+                <label key={choice} className="flex items-center gap-3">
+                <input
+        type="radio"
+        name="address"
+        value={choice}
+        checked={form.address === choice}
+        onChange={(e) =>
+          setForm({ ...form, address: e.target.value })
+        }
+        required
+      />
+      <span className='capitalize'>
+        {choice}
+      </span>
+      </label>
+     
+      ))}
+           
+            </div>
+          <Button
+  type="submit"
+  size="lg"
+  disabled={submitting}
+  className="w-full"
+>
+  {submitting ? "Processing..." : "Place Order"}
+</Button>
+          </form>
+  
           <div className="space-y-4">
             <h2 className="text-xs uppercase tracking-wider font-medium border-b border-platinum pb-3">
               Order Summary
             </h2>
-            {items.map((item) => (
+             {items.map((item) => (
               <div key={`${item.productId}-${item.selectedShape}`} className="flex gap-3 border-b border-platinum pb-4">
                 <img src={item.image} alt={item.name} className="w-16 h-16 object-cover bg-platinum" loading="lazy" />
                 <div className="flex-1">
@@ -164,17 +218,13 @@ export default function Checkout() {
                   </div>
                 </div>
                 <span className="text-sm font-medium">{formatPrice(item.price * item.quantity)}</span>
-              </div>
+                       </div>
             ))}
-            <div className="space-y-2 pt-4">
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Tax ({SITE_CONFIG.taxRate * 100}%)</span><span>{formatPrice(tax)}</span></div>
-              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Shipping</span><span>{shipping === 0 ? 'Free' : formatPrice(shipping)}</span></div>
-              <div className="flex justify-between text-base font-medium pt-2 border-t border-platinum"><span>Total</span><motion.span key={total} initial={{ scale: 1.1 }} animate={{ scale: 1 }}>{formatPrice(total)}</motion.span></div>
-            </div>
+
+           
           </div>
         </div>
       </div>
-    </div>
+  </div>
   );
 }

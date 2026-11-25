@@ -7,7 +7,7 @@ import { formatPrice } from '../../utils/format';
 export default function ProductCard({ product, index = 0 }) {
   const addItem = useCartStore((s) => s.addItem);
   const openCart = useCartStore((s) => s.openCart);
-
+ 
   const selectedShape = product.shapes ? product.shapes[0] : product.pastaType;
 
   const handleAddToCart = (e) => {
@@ -48,9 +48,9 @@ export default function ProductCard({ product, index = 0 }) {
           <h3 className="text-md font-heading font-medium leading-tight">{product.name}</h3>
         </Link>
         <div className="flex items-center gap-2 text-sm uppercase tracking-wider text-muted-foreground">
-          <span className="capitalize">{product.pastaType}</span>
+          <span className="capitalize">{product.pasta_type}</span>
           <span className="text-platinum">|</span>
-          <span className="capitalize">{product.packSize}</span>
+          <span className="capitalize">{product.pack_size}</span>
         </div>
     
         <div className="flex flex-col items-center justify-between mt-8">

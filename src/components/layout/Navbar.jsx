@@ -6,11 +6,13 @@ import { useCartStore } from '../../store/useCartStore';
 import { useSearchStore } from '../../store/useSearchStore';
 import { NAV_ITEMS } from '../../constants/site';
 import { CATEGORIES as PASTA_CATEGORIES } from '../../constants/categories';
-import logo from '../../assets/img/frescoBello-logo.avif'
+import logo from '../../assets/img/frescoBello-logo.avif';
+import axios from 'axios';
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [shopSubmenuOpen, setShopSubmenuOpen] = useState(false);
+  const [authenticated, setAuthenticated]= useState();
   const location = useLocation();
 
   const itemCount = useCartStore((s) => s.items.reduce((c, i) => c + i.quantity, 0));
@@ -40,7 +42,11 @@ export default function Navbar() {
     : 'font-bold';
 
   const linkColor = scrolled || !isHome ? 'text-obsidian' : 'text-alabaster';
-
+useEffect(()=>{
+const token=localStorage.getItem('authToken');
+setAuthenticated(!!token)
+console.log('token',token)
+}, [])
   return (
     <>
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBgClass}`}>
@@ -103,6 +109,21 @@ export default function Navbar() {
 
           {/* Right Icons */}
           <div className="flex items-center gap-2 md:gap-4">
+               
+       {authenticated ? <Link to='/login'
+              
+              className={`p-2 border border-2 transition-colors hover:text-gold hover:border-black ${linkColor}`}
+              aria-label="Open search"
+            >
+              Login
+            </Link>: <Link to='/signup'
+              
+              className={`p-2 border border-gold text-[#000] hover:bg-[#D4A017] hover:border-[#fff] hover:text-[#fff] transition-colors `}
+              aria-label="Open search"
+            >
+              Sign Up
+            </Link> }
+            
             <button
               onClick={openSearch}
               className={`p-2 transition-colors hover:text-gold ${linkColor}`}
@@ -110,6 +131,9 @@ export default function Navbar() {
             >
               <Search size={20} />
             </button>
+
+   
+            
 
             <button
               onClick={openCart}

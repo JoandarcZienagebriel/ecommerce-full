@@ -2,12 +2,12 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
-import { PRODUCTS } from '../constants/products';
+
 import { PASTA_TYPES } from '../constants/categories';
 import ProductCard from '../components/product/ProductCard';
 import Breadcrumb from '../components/common/Breadcrumb';
 import Button from '../components/common/Button';
-
+import axios from 'axios';
 const SORT_OPTIONS = [
   { value: 'price-low', label: 'Price: Low to High' },
   { value: 'price-high', label: 'Price: High to Low' },
@@ -21,7 +21,7 @@ export default function Shop() {
   const [sort, setSort] = useState('price-low');
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
-
+const [product, setProduct] = useState([])
   const categoryParam = searchParams.get('category');
 
   useEffect(() => {
@@ -34,13 +34,13 @@ export default function Shop() {
   }, [categoryParam]);
 
   const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result = [...product];
 
     // Search
     if (search.trim()) {
       const q = search.toLowerCase().trim();
       result = result.filter((p) =>
-        [p.name, p.ingredient, p.pastaType, p.category]
+        [p.name, p.ingredient, p.pasta_type, p.category]
           .filter(Boolean)
           .some((field) => field.toLowerCase().includes(q))
       );
@@ -49,7 +49,7 @@ export default function Shop() {
     // Pasta Type filter
     if (selectedTypes.length > 0) {
       result = result.filter((p) =>
-        selectedTypes.some((type) => p.pastaType === type.toLowerCase())
+        selectedTypes.some((type) => p.pasta_type === type.toLowerCase())
       );
     }
 
@@ -70,7 +70,7 @@ export default function Shop() {
     }
 
     return result;
-  }, [search, selectedTypes, sort]);
+  }, [product, search, selectedTypes, sort]);
 
   const toggleType = (type) => {
     setSelectedTypes((prev) =>
@@ -86,6 +86,15 @@ export default function Shop() {
     setSelectedTypes([]);
     setSearch('');
   };
+   useEffect(()=>{
+  axios.get('http://localhost:8000/api/products/')
+  .then((response)=>{
+    setProduct(response.data)
+  })
+  .catch((error)=>{
+    console.error(error);
+  })
+}, [])
 
   return (
     <div className="pt-16 md:pt-20 min-h-screen">
@@ -203,6 +212,7 @@ export default function Shop() {
 
           {/* Products */}
           <div className="flex-1">
+           
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredProducts.map((product, index) => (
                 <ProductCard key={product.id} product={product} index={index} />

@@ -2,26 +2,46 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { RECIPES } from '../../constants/recipes';
 import AnimatedSection from '../../components/animations/AnimatedSection';
-
+import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+import { useEffect, useRef } from 'react';
 export default function FeaturedRecipes() {
+
+const recipe = useRef(null)
+useEffect(()=>{
+  const ctx = gsap.context(()=>{
+    const el = recipe.current;
+   gsap.to( el,{
+  x:-900,
+  duration:2,
+  ease:'power2.in',
+  scrollTrigger:{
+    trigger:el,
+    scrub:1,
+    start:'top 60%',
+    end: '+=1500',
+    markers:true,
+  }
+
+});
+  })
+    return ()=>ctx.revert();
+},[])
+
   return (
     <AnimatedSection className="py-16 bg-obsidian border-b-4 border-gold text-alabaster md:py-24">
       <div className="px-4 md:px-8 lg:px-12 mb-8">
         <h2 className="font-heading text-3xl text-center md:text-4xl font-medium">Featured Recipes</h2>
         <p className="text-sm text-center font-bold text-muted-foreground mt-2">Inspiration for your next meal</p>
       </div>
-      <div className="flex gap-4 md:gap-6 overflow-x-auto hide-scrollbar px-4 md:px-8 lg:px-12 pb-4 snap-x">
+      <div className="flex gap-4 md:gap-6 overflow-x-auto hide-scrollbar px-4 md:px-8 lg:px-12 pb-4" ref={recipe}>
         {RECIPES.map((recipe, index) => (
           <motion.div
-            key={recipe.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: index * 0.05 }}
+            
           >
             <Link
               to={recipe.redirectTo}
-              className="block relative w-[280px] md:w-[440px] h-auto aspect-[4/3] overflow-hidden group"
+              className="block relative h-auto aspect-[4/3] group"
               aria-label={`${recipe.name} - ${recipe.overlayText}`}
             >
               <img

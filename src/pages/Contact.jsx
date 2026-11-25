@@ -130,73 +130,7 @@ export default function Contact() {
               </div>
             </motion.div>
 
-            {/* Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-            >
-              {submitted ? (
-                <div className="border border-obsidian p-8 text-center">
-                  <h3 className="font-heading text-xl mb-2">Message Sent</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Thank you for reaching out. We will get back to you shortly.
-                  </p>
-                  <Button
-                    onClick={() => setSubmitted(false)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Send Another
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-                  <Input
-                    label="Your Name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    error={errors.name}
-                    required
-                  />
-                  <Input
-                    label="Email Address"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    error={errors.email}
-                    required
-                  />
-                  <div>
-                    <label
-                      htmlFor="message"
-                      className="block text-xs uppercase tracking-wider text-obsidian mb-2 font-medium"
-                    >
-                      Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={form.message}
-                      onChange={handleChange}
-                      rows={5}
-                      className={`w-full border bg-transparent px-4 py-3 text-sm focus:outline-none focus:border-gold transition-colors ${
-                        errors.message ? 'border-destructive' : 'border-obsidian'
-                      }`}
-                      required
-                    />
-                    {errors.message && (
-                      <p className="mt-1 text-xs text-destructive">{errors.message}</p>
-                    )}
-                  </div>
-                  <Button type="submit" size="lg" disabled={submitting} className="w-full">
-                    {submitting ? 'Sending...' : 'Send Message'}
-                  </Button>
-                </form>
-              )}
-            </motion.div>
+          
           </div>
         </div>
       </div>
